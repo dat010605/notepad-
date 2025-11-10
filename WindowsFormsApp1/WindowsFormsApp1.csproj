@@ -100,6 +100,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <None Include="Resources\cut1.png" />
+    <None Include="Resources\open.png" />
+    <None Include="Resources\select all.png" />
+    <None Include="Resources\delete.png" />
+    <None Include="Resources\paste.png" />
+    <None Include="Resources\copy.png" />
+    <None Include="Resources\cut.jpg" />
+    <None Include="Resources\exit.png" />
+    <None Include="Resources\save as.jpg" />
+    <None Include="Resources\save.png" />
+    <None Include="Resources\save.jpg" />
+    <None Include="Resources\new file.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
