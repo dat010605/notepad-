@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp1
@@ -15,39 +11,91 @@ namespace WindowsFormsApp1
         public Form1()
         {
             InitializeComponent();
+            CreateNewTab(); // Khi mở chương trình sẽ có sẵn 1 tab mới
         }
 
-        private void paseToolStripMenuItem_Click(object sender, EventArgs e)
+        // 🧱 Lấy RichTextBox hiện tại trong tab đang chọn
+        private RichTextBox GetCurrentRichTextBox()
         {
-
+            if (tabControlMain.SelectedTab != null && tabControlMain.SelectedTab.Controls.Count > 0)
+                return tabControlMain.SelectedTab.Controls[0] as RichTextBox;
+            return null;
         }
 
-        private void cutToolStripMenuItem_Click(object sender, EventArgs e)
+        // 🧱 Tạo tab mới
+        private void CreateNewTab(string title = "Untitled")
         {
-
+            TabPage newTab = new TabPage(title);
+            RichTextBox rtb = new RichTextBox();
+            rtb.Dock = DockStyle.Fill;
+            rtb.Font = new Font("Consolas", 11);
+            newTab.Controls.Add(rtb);
+            tabControlMain.TabPages.Add(newTab);
+            tabControlMain.SelectedTab = newTab;
         }
 
-        private void maintextbox_TextChanged(object sender, EventArgs e)
+        // 🆕 File → New
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            CreateNewTab();
         }
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        // 📂 File → Open
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (openFileDialogMain.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialogMain.FileName;
+                string fileText = File.ReadAllText(filePath, Encoding.UTF8);
+                CreateNewTab(Path.GetFileName(filePath));
 
+                RichTextBox rtb = GetCurrentRichTextBox();
+                rtb.Text = fileText;
+                rtb.Tag = filePath; // Lưu đường dẫn để Save nhanh
+            }
         }
 
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        // 💾 File → Save
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
 
+            string filePath = rtb.Tag as string;
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                saveAsToolStripMenuItem_Click(sender, e); // Nếu chưa lưu, mở Save As
+                return;
+            }
+
+            File.WriteAllText(filePath, rtb.Text, Encoding.UTF8);
+            tabControlMain.SelectedTab.Text = Path.GetFileName(filePath);
         }
 
-        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
+        // 💾 File → Save As
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
 
+            if (saveFileDialogMain.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = saveFileDialogMain.FileName;
+                File.WriteAllText(filePath, rtb.Text, Encoding.UTF8);
+
+                rtb.Tag = filePath;
+                tabControlMain.SelectedTab.Text = Path.GetFileName(filePath);
+            }
         }
 
-        private void toolStripStatusLabel2_Click(object sender, EventArgs e)
+        // ❌ File → Exit
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void openFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
 
         }
