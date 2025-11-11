@@ -203,5 +203,63 @@ namespace WindowsFormsApp1
                 rtb.ZoomFactor -= 0.2f; // Giảm kích thước zoom đi 0.2
             }
         }
+
+        private void toolStripMenuItem14_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("zalo 0393175190 ");
+        }
+
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        { }
+      
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            // Kiểm tra xem TabControl có đang chứa bất kỳ Tab nào không
+            // (Giả sử TabControl của bạn có tên là tabControl1)
+            if (tabControlMain.TabPages.Count > 0)
+            {
+                // Lấy TabPage đang được chọn (Tab người dùng đang xem)
+                TabPage tabToRemove = tabControlMain.SelectedTab;
+
+                // Xóa TabPage đó khỏi TabControl
+                tabControlMain.TabPages.Remove(tabToRemove);
+
+                // Tùy chọn: Xử lý nếu đó là Tab cuối cùng
+                if (tabControlMain.TabPages.Count == 0)
+                {
+                    // Ví dụ: Tạo lại một Tab mới trống (thường là hành vi mong muốn cho Notepad)
+                    TabPage newTabPage = new TabPage("Untitled");
+                    RichTextBox newRichTextBox = new RichTextBox { Dock = DockStyle.Fill };
+                    newTabPage.Controls.Add(newRichTextBox);
+                    tabControlMain.TabPages.Add(newTabPage);
+                    tabControlMain.SelectedTab = newTabPage;
+                }
+            }
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            // 1. Đếm số lượng tab hiện có để đặt tên cho tab mới
+            int newTabIndex = tabControlMain.TabPages.Count + 1;
+
+            // 2. Tạo một TabPage mới
+            TabPage newTabPage = new TabPage("Untitled " + newTabIndex);
+
+            // 3. Tạo RichTextBox mới
+            RichTextBox newRichTextBox = new RichTextBox();
+
+            // 4. Cấu hình RichTextBox để lấp đầy toàn bộ TabPage
+            newRichTextBox.Dock = DockStyle.Fill;
+            newRichTextBox.Name = "RichTB_" + newTabIndex; // Đặt tên riêng để dễ quản lý sau này
+
+            // 5. Thêm RichTextBox vào TabPage
+            newTabPage.Controls.Add(newRichTextBox);
+
+            // 6. Thêm TabPage mới vào TabControl
+            tabControlMain.TabPages.Add(newTabPage);
+
+            // 7. Chuyển ngay sang Tab mới tạo để người dùng bắt đầu làm việc
+            tabControlMain.SelectedTab = newTabPage;
+        }
     }
 }
