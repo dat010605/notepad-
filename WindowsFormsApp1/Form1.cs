@@ -99,5 +99,63 @@ namespace WindowsFormsApp1
         {
 
         }
+        // --- SỬ DỤNG GetCurrentRichTextBox() THAY CHO richTextBox1 ---
+
+        private void cutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return; // Kiểm tra nếu không có tab nào đang mở
+
+            rtb.Focus();
+            // Kiểm tra xem có văn bản nào được chọn không
+            if (rtb.SelectionLength > 0)
+            {
+                rtb.Cut();
+            }
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            rtb.Focus();
+            // Kiểm tra xem có văn bản nào được chọn không
+            if (rtb.SelectionLength > 0)
+            {
+                rtb.Copy();
+            }
+        }
+
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            rtb.Focus();
+            // Kiểm tra xem clipboard có chứa văn bản không
+            if (Clipboard.ContainsText(TextDataFormat.Text))
+            {
+                rtb.Paste();
+            }
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            rtb.Focus();
+            rtb.SelectedText = "";
+        }
+
+        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            rtb.Focus();
+            rtb.SelectAll();
+        }
     }
 }
