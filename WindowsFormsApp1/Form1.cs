@@ -157,5 +157,51 @@ namespace WindowsFormsApp1
             rtb.Focus();
             rtb.SelectAll();
         }
+
+        private void toolStripButtonZoomIn_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            // Giới hạn phóng to để không bị quá lớn
+            if (rtb.ZoomFactor < 5.0f)
+            {
+                rtb.ZoomFactor += 0.2f; // Tăng kích thước zoom lên 0.2
+            }
+        }
+
+        private void toolStripButtonUndo_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            if (rtb.CanUndo)
+            {
+                rtb.Undo();
+            }
+        }
+
+        private void toolStripButtonRedo_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            if (rtb.CanRedo)
+            {
+                rtb.Redo();
+            }
+        }
+
+        private void toolStripButtonZoomOut_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            // Giới hạn thu nhỏ để không bị quá bé
+            if (rtb.ZoomFactor > 0.5f)
+            {
+                rtb.ZoomFactor -= 0.2f; // Giảm kích thước zoom đi 0.2
+            }
+        }
     }
 }
