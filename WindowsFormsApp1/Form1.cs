@@ -319,5 +319,46 @@ namespace WindowsFormsApp1
                 rtb.Cut();
             }
         }
+        private int lastSearchIndex = 0;
+        private string lastSearchText = "";
+        private void toolStripButtonCopy_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            // Nếu người dùng tìm lần đầu hoặc muốn tìm từ khóa mới
+            string input = Microsoft.VisualBasic.Interaction.InputBox(
+                "Nhập từ cần tìm:",
+                "Tìm kiếm văn bản",
+                lastSearchText
+            );
+
+            if (string.IsNullOrEmpty(input)) return;
+
+            // Nếu thay đổi từ khóa, bắt đầu lại từ đầu
+            if (input != lastSearchText)
+            {
+                lastSearchIndex = 0;
+                lastSearchText = input;
+            }
+
+            int index = rtb.Find(input, lastSearchIndex, RichTextBoxFinds.None);
+
+            if (index != -1)
+            {
+                // Tô sáng đoạn văn bản tìm thấy
+                rtb.Select(index, input.Length);
+                rtb.ScrollToCaret();
+                rtb.Focus();
+
+                // Lưu vị trí để tìm tiếp ở lần sau
+                lastSearchIndex = index + input.Length;
+            }
+            else
+            {
+                MessageBox.Show("Không tìm thấy chuỗi \"" + input + "\" nữa.", "Kết quả tìm kiếm");
+                lastSearchIndex = 0; // reset để tìm lại từ đầu
+            }
+        }
     }
 }
