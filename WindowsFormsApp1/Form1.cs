@@ -261,5 +261,63 @@ namespace WindowsFormsApp1
             // 7. Chuyển ngay sang Tab mới tạo để người dùng bắt đầu làm việc
             tabControlMain.SelectedTab = newTabPage;
         }
+
+        private void toolStripButtonNew_Click(object sender, EventArgs e)
+        {
+            CreateNewTab();
+        }
+
+        private void toolStripButtonOpen_Click(object sender, EventArgs e)
+        {
+            if (openFileDialogMain.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = openFileDialogMain.FileName;
+                string fileText = File.ReadAllText(filePath, Encoding.UTF8);
+                CreateNewTab(Path.GetFileName(filePath));
+
+                RichTextBox rtb = GetCurrentRichTextBox();
+                rtb.Text = fileText;
+                rtb.Tag = filePath; // Lưu đường dẫn để Save nhanh
+            }
+        }
+
+        private void toolStripButtonSave_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            string filePath = rtb.Tag as string;
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                saveAsToolStripMenuItem_Click(sender, e); // Nếu chưa lưu, mở Save As
+                return;
+            }
+
+            File.WriteAllText(filePath, rtb.Text, Encoding.UTF8);
+            tabControlMain.SelectedTab.Text = Path.GetFileName(filePath);
+        }
+
+        private void toolStripButton5_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            rtb.Focus();
+            rtb.SelectedText = "";
+        }
+
+        private void toolStripButtonCut_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return; // Kiểm tra nếu không có tab nào đang mở
+
+            rtb.Focus();
+            // Kiểm tra xem có văn bản nào được chọn không
+            if (rtb.SelectionLength > 0)
+            {
+                rtb.Cut();
+            }
+        }
     }
 }
