@@ -101,6 +101,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <None Include="Resources\highlight_967291.png" />
+    <None Include="Resources\highlight_96729.png" />
     <None Include="Resources\icons8-add-48.png" />
     <None Include="Resources\icons8-close-48.png" />
     <None Include="Resources\cut1.png" />

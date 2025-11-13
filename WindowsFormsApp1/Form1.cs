@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace WindowsFormsApp1
 {
@@ -360,5 +361,297 @@ namespace WindowsFormsApp1
                 lastSearchIndex = 0; // reset để tìm lại từ đầu
             }
         }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox(); if (rtb == null) return;
+            rtb.Focus();
+            rtb.SelectAll();
+            rtb.Focus();
+            lastSearchText = rtb.Text;
+            string input = Microsoft.VisualBasic.Interaction.InputBox(
+                "Nhập từ cần tìm:",
+                "Tìm kiếm văn bản",
+                lastSearchText
+            );
+
+            if (string.IsNullOrEmpty(input)) return;
+
+            if (input != lastSearchText)
+            {
+                lastSearchIndex = 0;
+                lastSearchText = input;
+            }
+
+            int index = rtb.Find(input, lastSearchIndex, RichTextBoxFinds.None);
+
+            if (index != -1)
+            {
+                rtb.Select(index, input.Length);
+                rtb.ScrollToCaret();
+                rtb.Focus();
+
+                lastSearchIndex = index + input.Length;
+            }
+            else
+            {
+                MessageBox.Show("Không tìm thấy chuỗi \"" + input + "\" nữa.", "Kết quả tìm kiếm");
+                lastSearchIndex = 0;
+            }
+        }
+        // Add this field (ensure highlight color = yellow)
+        private readonly Color toggleHighlightColor = Color.Yellow;
+
+        // Toggle highlight for current selection (use background color)
+        private void ToggleHighlightSelection(RichTextBox rtb, Color highlightColor)
+        {
+            if (rtb.SelectionLength == 0) return;
+
+            int selStart = rtb.SelectionStart;
+            int selLength = rtb.SelectionLength;
+
+            // If entire selection already has the highlight color, remove it; otherwise apply it.
+            // Use SelectionBackColor so the highlight is a yellow background.
+            Color currentBackColor = rtb.SelectionBackColor;
+            Color newColor = currentBackColor == highlightColor ? rtb.BackColor : highlightColor;
+
+            rtb.SelectionBackColor = newColor;
+
+            // Restore original selection
+            rtb.Select(selStart, selLength);
+        }
+        // Add these fields
+        private string lastHighlightedTerm = null;
+        private bool isTermHighlighted = false;
+
+        // Modified HighlightAll (restore selection without forcing backcolor)
+        private void HighlightAll(RichTextBox rtb, string searchText, Color highlightColor, bool matchCase)
+        {
+            if (string.IsNullOrEmpty(searchText)) return;
+
+            int selStart = rtb.SelectionStart;
+            int selLength = rtb.SelectionLength;
+
+            RichTextBoxFinds options = matchCase ? RichTextBoxFinds.MatchCase : RichTextBoxFinds.None;
+            int start = 0;
+
+            while (true)
+            {
+                int index = rtb.Find(searchText, start, options);
+                if (index == -1) break;
+                rtb.Select(index, searchText.Length);
+                rtb.SelectionBackColor = highlightColor;
+                start = index + searchText.Length;
+            }
+
+            // Restore original selection (do not change its backcolor)
+            rtb.Select(selStart, selLength);
+        }
+
+        // New: clear highlights for a specific term
+        private void ClearHighlightsForTerm(RichTextBox rtb, string searchText, bool matchCase = false)
+        {
+            if (string.IsNullOrEmpty(searchText)) return;
+
+            int selStart = rtb.SelectionStart;
+            int selLength = rtb.SelectionLength;
+
+            RichTextBoxFinds options = matchCase ? RichTextBoxFinds.MatchCase : RichTextBoxFinds.None;
+            int start = 0;
+
+            while (true)
+            {
+                int index = rtb.Find(searchText, start, options);
+                if (index == -1) break;
+                rtb.Select(index, searchText.Length);
+                rtb.SelectionBackColor = rtb.BackColor;
+                start = index + searchText.Length;
+            }
+
+            rtb.Select(selStart, selLength);
+        }
+
+        // Updated handler: toggle highlights when no selection
+        private void toolStripButtonHighlight_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox(); if (rtb == null) return;
+
+            if (rtb.SelectionLength > 0)
+            {
+                // Toggle highlight on selected text
+                ToggleHighlightSelection(rtb, toggleHighlightColor);
+                return;
+            }
+
+            // No selection -> ask for text to highlight across document
+            string input = Microsoft.VisualBasic.Interaction.InputBox(
+                "Nhập từ cần tìm:",
+                "Tô màu tất cả",
+                ""
+            );
+            if (string.IsNullOrEmpty(input)) return;
+            HighlightAll(rtb, input, toggleHighlightColor, matchCase: false);
+
+            // If the same term is already highlighted -> remove highlights
+            if (isTermHighlighted && string.Equals(lastHighlightedTerm, input, StringComparison.Ordinal))
+            {
+                ClearHighlightsForTerm(rtb, input, matchCase: false);
+                lastHighlightedTerm = null;
+                isTermHighlighted = false;
+                return;
+            }
+
+            // If another term was highlighted, clear it first
+            if (isTermHighlighted && !string.IsNullOrEmpty(lastHighlightedTerm))
+            {
+                ClearHighlightsForTerm(rtb, lastHighlightedTerm, matchCase: false);
+                lastHighlightedTerm = null;
+                isTermHighlighted = false;
+            }
+
+            // Highlight new term and remember it
+            HighlightAll(rtb, input, toggleHighlightColor, matchCase: false);
+            lastHighlightedTerm = input;
+            isTermHighlighted = true;
+        }
+        // Add this method to your Form1 class
+        private void ClearHighlights(RichTextBox rtb)
+        {
+            int selStart = rtb.SelectionStart;
+            int selLength = rtb.SelectionLength;
+
+            rtb.SelectAll();
+            rtb.SelectionBackColor = rtb.BackColor;
+
+            // Restore original selection
+            rtb.Select(selStart, selLength);
+        }
+        // Clear highlights handler (if you want separate button/menu)
+        private void toolStripButtonClearHighlights_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+            ClearHighlights(rtb);
+        }
+        // Add this method to your Form1 class
+        private void SyntaxHighlightKeywords(RichTextBox rtb, string[] keywords, Color color, bool matchCase)
+        {
+            int selStart = rtb.SelectionStart;
+            int selLength = rtb.SelectionLength;
+
+            // Save the original color
+            Color defaultColor = rtb.ForeColor;
+
+            // Remove previous coloring
+            rtb.SelectAll();
+            rtb.SelectionColor = defaultColor;
+
+            RichTextBoxFinds options = matchCase ? RichTextBoxFinds.MatchCase : RichTextBoxFinds.None;
+
+            foreach (string keyword in keywords)
+            {
+                int start = 0;
+                while (true)
+                {
+                    int index = rtb.Find(keyword, start, options);
+                    if (index == -1) break;
+                    rtb.Select(index, keyword.Length);
+                    rtb.SelectionColor = color;
+                    start = index + keyword.Length;
+                }
+            }
+
+            // Restore original selection
+            rtb.Select(selStart, selLength);
+            rtb.SelectionColor = defaultColor;
+        }
+        private void toolStripButtonSyntaxHighlight_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            string[] csharpKeywords = new[]
+            {
+                "using", "namespace", "class", "public", "private", "protected", "static",
+                "void", "int", "string", "bool", "return", "new", "if", "else", "for", "foreach",
+                "while", "switch", "case", "break", "continue", "try", "catch", "finally"
+            };
+
+            SyntaxHighlightKeywords(rtb, csharpKeywords, Color.Blue, matchCase: false);
+        }
+        
+        // Add these fields (place inside Form1 class)
+private int pluginTabSize = 4;
+
+        // Add these methods and handlers (place inside Form1 class)
+        private void CountLinesInCurrent()
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+            int lines = rtb.Lines?.Length ?? 0;
+            MessageBox.Show($"Current document has {lines} line{(lines == 1 ? "" : "s")}.", "Line Count");
+        }
+
+        private enum WhitespaceMode { TabsToSpaces = 1, SpacesToTabs = 2, TrimTrailing = 3 }
+
+        private void ConvertWhitespaceInCurrent(WhitespaceMode mode)
+        {
+            RichTextBox rtb = GetCurrentRichTextBox();
+            if (rtb == null) return;
+
+            int selStart = rtb.SelectionStart;
+            int selLength = rtb.SelectionLength;
+
+            string text = rtb.Text;
+            string newText = text;
+            string spaces = new string(' ', pluginTabSize);
+
+            switch (mode)
+            {
+                case WhitespaceMode.TabsToSpaces:
+                    newText = text.Replace("\t", spaces);
+                    break;
+                case WhitespaceMode.SpacesToTabs:
+                    // simple replacement of groups of N spaces -> tab
+                    newText = text.Replace(spaces, "\t");
+                    break;
+                case WhitespaceMode.TrimTrailing:
+                    // remove trailing spaces/tabs on each line
+                    newText = Regex.Replace(text, "[ \\t]+(?=\\r?$)", "", RegexOptions.Multiline);
+                    break;
+            }
+
+            if (newText != text)
+            {
+                rtb.Text = newText;
+                // restore selection safely
+                rtb.SelectionStart = Math.Min(selStart, rtb.Text.Length);
+                rtb.SelectionLength = Math.Min(selLength, Math.Max(0, rtb.Text.Length - rtb.SelectionStart));
+            }
+
+            MessageBox.Show("Plugin: whitespace conversion completed.", "Plugin");
+        }
+
+        // Simple handlers you can wire from Designer (or call directly)
+        private void pluginCountLinesToolStripMenuItem_Click(object sender, EventArgs e) => CountLinesInCurrent();
+
+        private void pluginConvertWhitespaceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string input = Microsoft.VisualBasic.Interaction.InputBox(
+                "Choose option:\n1 - Tabs → Spaces\n2 - Spaces → Tabs\n3 - Trim trailing whitespace\n(Default 1)",
+                "Whitespace Conversion",
+                "1"
+            );
+            if (string.IsNullOrEmpty(input)) return;
+            if (!int.TryParse(input, out int choice)) return;
+            if (choice < 1 || choice > 3) return;
+            ConvertWhitespaceInCurrent((WhitespaceMode)choice);
+        }
+
+        private void toolStripButtonPaste_Click(object sender, EventArgs e)
+        {
+
+        }
     }
+    
 }
